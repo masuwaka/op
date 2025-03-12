@@ -19,7 +19,7 @@ class RedisAPI:
             host=self.host,
             port=REDIS_PORT,
             password=REDIS_PASSWORD,
-            decode_responces=True,
+            decode_responses=True,
             socket_timeout=5,
             retry_on_timeout=True,
             max_connections=10,
@@ -42,3 +42,8 @@ class RedisAPI:
                     print("Connection to redis-server has been suspended long time: Re-create connection pool.")
                     self._create_redis_instance()
                     retryCount = 0
+
+    def cleanup(self):
+        keys = self.execute("keys")
+        for key in keys:
+            self.execute("delete", key)
