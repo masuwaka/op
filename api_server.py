@@ -50,7 +50,6 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 async def check_client_ip(request: Request):
     clientIP = request.client.host
-    print(clientIP)
     allowedIPs = ["127.0.0.1"]
     #    client_ip = request.client.host
     #    allowed_ips = redis_client.smembers("allowed_ips")  # Redis から許可リスト取得
