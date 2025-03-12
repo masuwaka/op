@@ -2,7 +2,6 @@ import os
 import signal
 import subprocess
 import sys
-from time import sleep
 
 import psutil
 import redis
