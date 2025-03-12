@@ -2,6 +2,7 @@ import os
 import signal
 import subprocess
 import sys
+from socket import gethostname
 
 import psutil
 import redis
@@ -13,6 +14,8 @@ from fastapi.responses import JSONResponse
 PROCESS_NAME = "project_api_server"
 API_PORT = 50217
 REDIS_PORT = 56379
+REDIS_PASSWORD = "project"
+HOSTNAME = gethostname()
 
 app = FastAPI()
 
@@ -50,12 +53,16 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 async def check_client_ip(request: Request):
     clientIP = request.client.host
-    allowedIPs = ["127.0.0.1"]
-    #    client_ip = request.client.host
-    #    allowed_ips = redis_client.smembers("allowed_ips")  # Redis から許可リスト取得
-    if clientIP not in allowedIPs:
-        raise HTTPException(status_code=403, detail="Access denied.")
-    return clientIP
+    try:
+        r = redis.Redis(host=clientIP, port=REDIS_PORT, password=REDIS_PASSWORD, decode_responses=True)
+        for key in r.keys():
+            hostname = r.hget(key, "opt_hostname")
+            if hostname is not None and hostname == HOSTNAME:
+                return clientIP
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+
+    raise HTTPException(status_code=403, detail="Access denied.")
 
 
 @app.get("/check/{pid}")
